@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CRUD con AJAX, PHP y PostgreSQL en MVC</title>
+    <meta charset="utf-8">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            listarClientes();
+
+            $('#btnInsertar').click(function() {
+                var nombre = $('#nombre').val();
+                var email = $('#email').val();
+                var telefono = $('#telefono').val();
+
+                $.ajax({
+                    url: 'getCliente.php',
+                    type: 'POST',
+                    data: {
+                        accion: 'insertar',
+                        nombre: nombre,
+                        email: email,
+                        telefono: telefono
+                    },
+                    success: function(res) {
+                        console.log(res);
+                        listarClientes();
+                        $('#nombre').val('');
+                        $('#email').val('');
+                        $('#telefono').val('');
+                    }
+                });
+            });
+
+            $(document).on('click', '.btnActualizar', function() {
+                var id = $(this).data('id');
+                var nombre = $('#nombre' + id).text();
+                var email = $('#email' + id).text();
+                var telefono = $('#telefono' + id).text();
+
+                $.ajax({
+                    url: 'ClienteController.php',
+                    type: 'POST',
+                    data: {
+                        accion: 'actualizar',
+                        id: id,
+                        nombre: nombre,
+                        email: email,
+                        telefono: telefono
+                    },
+                    success: function() {
+                        listarClientes();
+                    }
+                });
+            }); 
+
+            $(document).on('click', '#btnEliminar', function() {
+                var id = $(this).data('id');
+
+                $.ajax({
+                    url: 'getCliente.php',
+                    type: 'POST',
+                    data: {
+                        accion: 'eliminar',
+                        id: id
+                    },
+                    success: function() {
+                        listarClientes();
+                    }
+                });
+            });
+        });
+
+        function listarClientes() {
+            $.ajax({
+                url: 'getCliente.php',
+                type: 'POST',
+                data: {
+                    accion: 'listar'
+                },
+                dataType: 'json',
+                success: function(clientes) {
+                    var html = '';
+                    console.log("lista");
+                    $.each(clientes, function(indice, cliente) {
+                        html += '<tr>';
+                        html += '<td>' + cliente.id + '</td>';
+                        html += '<td id="nombre' + cliente.id + '">' + cliente.nombre + '</td>';
+                        html += '<td id="email' + cliente.id + '">' + cliente.email + '</td>';
+                        html += '<td id="telefono' + cliente.id + '">' + cliente.telefono + '</td>';
+                        html += '<td><button id="btnEliminar" data-id="' + cliente.id + '">Eliminar cliente</button></td>';
+                        });
+                        $('#listaClientes').html(html);
+                    }
+                });
+            }
+</script>
+</head>
+<body>
+    <h1>CRUD con AJAX, PHP y PostgreSQL en MVC</h1>
+    <h2>Insertar cliente</h2>
+
+<form>
+    <label for="nombre">Nombre:</label>
+    <input type="text" id="nombre" name="nombre"><br>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email"><br>
+
+    <label for="telefono">Teléfono:</label>
+    <input type="tel" id="telefono" name="telefono"><br>
+
+    <button type="button" id="btnInsertar">Insertar</button>
+</form>
+
+<h2>Listado de clientes</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Accion</th>
+        </tr>
+    </thead>
+    <tbody id="listaClientes">
+    </tbody>
+</table>
+</body>
+</html>
